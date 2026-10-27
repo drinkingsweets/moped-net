@@ -1,0 +1,17 @@
+sequenceDiagram
+ participant I as Incident
+ participant C as Capacity
+ I->>C: RESERVE commandId=c1
+ C->>C: транзакция проверки ёмкости
+ alt Подтверждённый отказ
+ C-->>I: FAILED - NO_CAPACITY
+ I->>I: ABORTED, freeze не запускать
+ else Ответ RESERVE потерялся
+ I->>C: GET operations/c1
+ C-->>I: результат той же операции
+ opt Резерв был создан и принято решение об отмене
+ I->>C: RELEASE того же резерва
+ C-->>I: RELEASED
+ end
+ I->>I: ABORTED после подтверждения очистки
+ end

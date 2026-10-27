@@ -1,0 +1,691 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "Moped.NET events",
+    "version": "1.0.0"
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "broker": {
+      "host": "rabbitmq.moped.example:5671",
+      "protocol": "amqps",
+      "description": "Placeholder; topic exchange moped.events, persistent messages, publisher confirms, mandatory routing",
+      "security": [
+        {
+          "$ref": "#/components/securitySchemes/brokerAuth"
+        }
+      ]
+    }
+  },
+  "channels": {
+    "incident": {
+      "address": "incident.changed.v1",
+      "messages": {
+        "IncidentChanged": {
+          "$ref": "#/components/messages/IncidentChanged"
+        }
+      },
+      "description": "Publisher: incident. Exchange moped.events. Routing key incident.changed.v1.",
+      "servers": [
+        {
+          "$ref": "#/servers/broker"
+        }
+      ]
+    },
+    "capacity": {
+      "address": "capacity.changed.v1",
+      "messages": {
+        "CapacityChanged": {
+          "$ref": "#/components/messages/CapacityChanged"
+        }
+      },
+      "description": "Publisher: capacity. Exchange moped.events. Routing key capacity.changed.v1.",
+      "servers": [
+        {
+          "$ref": "#/servers/broker"
+        }
+      ]
+    },
+    "data": {
+      "address": "data.checked.v1",
+      "messages": {
+        "DataChecked": {
+          "$ref": "#/components/messages/DataChecked"
+        }
+      },
+      "description": "Publisher: data. Exchange moped.events. Routing key data.checked.v1.",
+      "servers": [
+        {
+          "$ref": "#/servers/broker"
+        }
+      ]
+    },
+    "traffic": {
+      "address": "traffic.changed.v1",
+      "messages": {
+        "TrafficChanged": {
+          "$ref": "#/components/messages/TrafficChanged"
+        }
+      },
+      "description": "Publisher: traffic. Exchange moped.events. Routing key traffic.changed.v1.",
+      "servers": [
+        {
+          "$ref": "#/servers/broker"
+        }
+      ]
+    },
+    "readiness": {
+      "address": "readiness.changed.v1",
+      "messages": {
+        "ReadinessChanged": {
+          "$ref": "#/components/messages/ReadinessChanged"
+        }
+      },
+      "description": "Publisher: readiness. Exchange moped.events. Routing key readiness.changed.v1.",
+      "servers": [
+        {
+          "$ref": "#/servers/broker"
+        }
+      ]
+    }
+  },
+  "operations": {
+    "publishIncidentChanged": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/incident"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/incident/messages/IncidentChanged"
+        }
+      ],
+      "description": "incident outbox publisher"
+    },
+    "readinessReceiveIncidentChanged": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/incident"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/incident/messages/IncidentChanged"
+        }
+      ],
+      "description": "readiness.events durable quorum queue, manual ACK after inbox+state commit"
+    },
+    "publishCapacityChanged": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/capacity"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/capacity/messages/CapacityChanged"
+        }
+      ],
+      "description": "capacity outbox publisher"
+    },
+    "incidentReceiveCapacityChanged": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/capacity"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/capacity/messages/CapacityChanged"
+        }
+      ],
+      "description": "incident.events durable quorum queue, manual ACK after inbox+state commit"
+    },
+    "readinessReceiveCapacityChanged": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/capacity"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/capacity/messages/CapacityChanged"
+        }
+      ],
+      "description": "readiness.events durable quorum queue, manual ACK after inbox+state commit"
+    },
+    "publishDataChecked": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/data"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/data/messages/DataChecked"
+        }
+      ],
+      "description": "data outbox publisher"
+    },
+    "incidentReceiveDataChecked": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/data"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/data/messages/DataChecked"
+        }
+      ],
+      "description": "incident.events durable quorum queue, manual ACK after inbox+state commit"
+    },
+    "readinessReceiveDataChecked": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/data"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/data/messages/DataChecked"
+        }
+      ],
+      "description": "readiness.events durable quorum queue, manual ACK after inbox+state commit"
+    },
+    "publishTrafficChanged": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/traffic"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/traffic/messages/TrafficChanged"
+        }
+      ],
+      "description": "traffic outbox publisher"
+    },
+    "incidentReceiveTrafficChanged": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/traffic"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/traffic/messages/TrafficChanged"
+        }
+      ],
+      "description": "incident.events durable quorum queue, manual ACK after inbox+state commit"
+    },
+    "readinessReceiveTrafficChanged": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/traffic"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/traffic/messages/TrafficChanged"
+        }
+      ],
+      "description": "readiness.events durable quorum queue, manual ACK after inbox+state commit"
+    },
+    "publishReadinessChanged": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/readiness"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/readiness/messages/ReadinessChanged"
+        }
+      ],
+      "description": "readiness outbox publisher"
+    },
+    "incidentReceiveReadinessChanged": {
+      "action": "receive",
+      "channel": {
+        "$ref": "#/channels/readiness"
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/readiness/messages/ReadinessChanged"
+        }
+      ],
+      "description": "incident.events durable quorum queue, manual ACK after inbox+state commit"
+    }
+  },
+  "components": {
+    "messages": {
+      "IncidentChanged": {
+        "name": "IncidentChanged",
+        "title": "IncidentChanged",
+        "contentType": "application/json",
+        "payload": {
+          "$ref": "#/components/schemas/IncidentChanged"
+        },
+        "correlationId": {
+          "location": "$message.payload#/migrationId"
+        }
+      },
+      "CapacityChanged": {
+        "name": "CapacityChanged",
+        "title": "CapacityChanged",
+        "contentType": "application/json",
+        "payload": {
+          "$ref": "#/components/schemas/CapacityChanged"
+        },
+        "correlationId": {
+          "location": "$message.payload#/migrationId"
+        }
+      },
+      "DataChecked": {
+        "name": "DataChecked",
+        "title": "DataChecked",
+        "contentType": "application/json",
+        "payload": {
+          "$ref": "#/components/schemas/DataChecked"
+        },
+        "correlationId": {
+          "location": "$message.payload#/migrationId"
+        }
+      },
+      "TrafficChanged": {
+        "name": "TrafficChanged",
+        "title": "TrafficChanged",
+        "contentType": "application/json",
+        "payload": {
+          "$ref": "#/components/schemas/TrafficChanged"
+        },
+        "correlationId": {
+          "location": "$message.payload#/migrationId"
+        }
+      },
+      "ReadinessChanged": {
+        "name": "ReadinessChanged",
+        "title": "ReadinessChanged",
+        "contentType": "application/json",
+        "payload": {
+          "$ref": "#/components/schemas/ReadinessChanged"
+        },
+        "correlationId": {
+          "location": "$message.payload#/migrationId"
+        }
+      }
+    },
+    "schemas": {
+      "IncidentChanged": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "migrationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "aggregateVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "causationId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "PREPARING",
+                  "PINNED",
+                  "FROZEN",
+                  "VERIFIED",
+                  "PROMOTED",
+                  "ROUTED",
+                  "BLOCKED",
+                  "DEGRADED",
+                  "ABORTED",
+                  "READY_TO_SHUTDOWN"
+                ]
+              },
+              "operationId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "state"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "eventId",
+          "occurredAt",
+          "migrationId",
+          "generation",
+          "aggregateId",
+          "aggregateVersion",
+          "causationId",
+          "traceId",
+          "schemaVersion",
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "CapacityChanged": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "migrationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "aggregateVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "causationId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "HELD",
+                  "PINNED",
+                  "ALLOCATED",
+                  "RELEASED",
+                  "EXPIRED"
+                ]
+              },
+              "operationId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "state",
+              "operationId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "eventId",
+          "occurredAt",
+          "migrationId",
+          "generation",
+          "aggregateId",
+          "aggregateVersion",
+          "causationId",
+          "traceId",
+          "schemaVersion",
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "DataChecked": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "migrationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "aggregateVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "causationId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "PRECHECK_OK",
+                  "VERIFIED",
+                  "FAILED"
+                ]
+              },
+              "operationId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "state",
+              "operationId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "eventId",
+          "occurredAt",
+          "migrationId",
+          "generation",
+          "aggregateId",
+          "aggregateVersion",
+          "causationId",
+          "traceId",
+          "schemaVersion",
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "TrafficChanged": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "migrationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "aggregateVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "causationId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "FROZEN",
+                  "PROMOTED",
+                  "ROUTED",
+                  "RESUMED",
+                  "UNKNOWN"
+                ]
+              },
+              "operationId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "state",
+              "operationId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "eventId",
+          "occurredAt",
+          "migrationId",
+          "generation",
+          "aggregateId",
+          "aggregateVersion",
+          "causationId",
+          "traceId",
+          "schemaVersion",
+          "data"
+        ],
+        "additionalProperties": false
+      },
+      "ReadinessChanged": {
+        "type": "object",
+        "properties": {
+          "eventId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "migrationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "aggregateId": {
+            "type": "string"
+          },
+          "aggregateVersion": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "causationId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "PENDING",
+                  "READY_TO_SHUTDOWN",
+                  "BLOCKED"
+                ]
+              },
+              "operationId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "state",
+              "operationId"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "eventId",
+          "occurredAt",
+          "migrationId",
+          "generation",
+          "aggregateId",
+          "aggregateVersion",
+          "causationId",
+          "traceId",
+          "schemaVersion",
+          "data"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "brokerAuth": {
+        "type": "userPassword"
+      }
+    }
+  }
+}

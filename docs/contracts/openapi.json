@@ -1,0 +1,2908 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Moped.NET control plane and simulator contracts",
+    "version": "1.0.0",
+    "description": "Architectural contract, no deployed endpoints. POST commands persist before execution. See docs/03-contracts.md for authorization, reconciliation and lifecycle rules."
+  },
+  "servers": [
+    {
+      "url": "https://incident.moped.example/v1",
+      "description": "incident service; placeholder host"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/alerts": {
+      "post": {
+        "operationId": "createAlert",
+        "servers": [
+          {
+            "url": "https://incident.moped.example/v1",
+            "description": "incident service; placeholder host"
+          }
+        ],
+        "summary": "Create or attach alert to active workload migration",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Alert"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Durably accepted; operationId equals commandId. Replay returns same identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reservations/commands": {
+      "post": {
+        "operationId": "capacityCommand",
+        "servers": [
+          {
+            "url": "https://capacity.moped.example/v1",
+            "description": "capacity service; placeholder host"
+          }
+        ],
+        "summary": "Accept capacity command; see docs/03-contracts.md for action preconditions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapacityCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Durably accepted; operationId equals commandId. Replay returns same identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/migrations/{migrationId}/capacity": {
+      "get": {
+        "operationId": "capacitySnapshot",
+        "servers": [
+          {
+            "url": "https://capacity.moped.example/v1",
+            "description": "capacity service; placeholder host"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "migrationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/checks/commands": {
+      "post": {
+        "operationId": "dataCommand",
+        "servers": [
+          {
+            "url": "https://data.moped.example/v1",
+            "description": "data service; placeholder host"
+          }
+        ],
+        "summary": "Accept data command; see docs/03-contracts.md for action preconditions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Durably accepted; operationId equals commandId. Replay returns same identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/migrations/{migrationId}/data": {
+      "get": {
+        "operationId": "dataSnapshot",
+        "servers": [
+          {
+            "url": "https://data.moped.example/v1",
+            "description": "data service; placeholder host"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "migrationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/switchovers/commands": {
+      "post": {
+        "operationId": "trafficCommand",
+        "servers": [
+          {
+            "url": "https://traffic.moped.example/v1",
+            "description": "traffic service; placeholder host"
+          }
+        ],
+        "summary": "Accept traffic command; see docs/03-contracts.md for action preconditions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrafficCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Durably accepted; operationId equals commandId. Replay returns same identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/migrations/{migrationId}/traffic": {
+      "get": {
+        "operationId": "trafficSnapshot",
+        "servers": [
+          {
+            "url": "https://traffic.moped.example/v1",
+            "description": "traffic service; placeholder host"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "migrationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/readiness/commands": {
+      "post": {
+        "operationId": "readinessCommand",
+        "servers": [
+          {
+            "url": "https://readiness.moped.example/v1",
+            "description": "readiness service; placeholder host"
+          }
+        ],
+        "summary": "Accept readiness command; see docs/03-contracts.md for action preconditions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadinessCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Durably accepted; operationId equals commandId. Replay returns same identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/migrations/{migrationId}/readiness": {
+      "get": {
+        "operationId": "readinessSnapshot",
+        "servers": [
+          {
+            "url": "https://readiness.moped.example/v1",
+            "description": "readiness service; placeholder host"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "migrationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/migrations/{migrationId}": {
+      "get": {
+        "operationId": "getMigration",
+        "servers": [
+          {
+            "url": "https://incident.moped.example/v1",
+            "description": "incident service; placeholder host"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "migrationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Snapshot"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/operations/{operationId}": {
+      "get": {
+        "operationId": "getOperation",
+        "servers": [
+          {
+            "url": "https://incident.moped.example/v1",
+            "description": "incident service; placeholder host"
+          },
+          {
+            "url": "https://capacity.moped.example/v1",
+            "description": "capacity service; placeholder host"
+          },
+          {
+            "url": "https://data.moped.example/v1",
+            "description": "data service; placeholder host"
+          },
+          {
+            "url": "https://traffic.moped.example/v1",
+            "description": "traffic service; placeholder host"
+          },
+          {
+            "url": "https://readiness.moped.example/v1",
+            "description": "readiness service; placeholder host"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tasks/{taskId}/completion": {
+      "post": {
+        "operationId": "completeTask",
+        "servers": [
+          {
+            "url": "https://readiness.moped.example/v1",
+            "description": "readiness service; placeholder host"
+          }
+        ],
+        "summary": "Engineer records evidence; generation must match task",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "name": "taskId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskCompletion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Durably accepted; operationId equals commandId. Replay returns same identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/controller/commands": {
+      "post": {
+        "operationId": "controllerCommand",
+        "servers": [
+          {
+            "url": "https://simulator.moped.example/v1",
+            "description": "simulator service; placeholder host"
+          }
+        ],
+        "summary": "External contract: durable idempotent CAS; never acknowledge fencing before enforcement",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ControllerCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Durably accepted; operationId equals commandId. Replay returns same identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/replication/commands": {
+      "post": {
+        "operationId": "replicationCommand",
+        "servers": [
+          {
+            "url": "https://simulator.moped.example/v1",
+            "description": "simulator service; placeholder host"
+          }
+        ],
+        "summary": "External contract: check replica compatibility or applied checkpoint",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplicationCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Durably accepted; operationId equals commandId. Replay returns same identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/controller/operations/{operationId}": {
+      "get": {
+        "operationId": "controllerOperation",
+        "servers": [
+          {
+            "url": "https://simulator.moped.example/v1",
+            "description": "simulator service; placeholder host"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/replication/operations/{operationId}": {
+      "get": {
+        "operationId": "replicationOperation",
+        "servers": [
+          {
+            "url": "https://simulator.moped.example/v1",
+            "description": "simulator service; placeholder host"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/controller/workloads/{workloadId}": {
+      "get": {
+        "operationId": "controllerState",
+        "servers": [
+          {
+            "url": "https://simulator.moped.example/v1",
+            "description": "simulator service; placeholder host"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "workloadId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authoritative current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ControllerState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing/invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict, expired reservation or stale generation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable; effect may be unknown, reconcile by commandId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "parameters": {
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "traceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "detail",
+          "retryable",
+          "traceId"
+        ],
+        "additionalProperties": false
+      },
+      "Alert": {
+        "type": "object",
+        "properties": {
+          "commandId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "alertId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "workloadId": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "units": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "commandId",
+          "alertId",
+          "workloadId",
+          "source",
+          "target",
+          "units"
+        ],
+        "additionalProperties": false
+      },
+      "Accepted": {
+        "type": "object",
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "migrationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING"
+            ]
+          }
+        },
+        "required": [
+          "operationId",
+          "migrationId",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "Operation": {
+        "type": "object",
+        "properties": {
+          "operationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "migrationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "action": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "RUNNING",
+              "SUCCEEDED",
+              "FAILED",
+              "UNKNOWN"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "reservationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "proofId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "freezeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "checkpoint": {
+                "type": "string"
+              },
+              "timeline": {
+                "type": "string"
+              },
+              "writer": {
+                "type": "string"
+              },
+              "writerEpoch": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "route": {
+                "type": "string"
+              },
+              "healthy": {
+                "type": "boolean"
+              },
+              "sourceFenced": {
+                "type": "boolean"
+              },
+              "permitId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          },
+          "error": {
+            "$ref": "#/components/schemas/Error"
+          }
+        },
+        "required": [
+          "operationId",
+          "migrationId",
+          "generation",
+          "action",
+          "status",
+          "version"
+        ],
+        "additionalProperties": false
+      },
+      "CapacityCommand": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "RESERVE"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "units": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target",
+              "units"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "PIN"
+              },
+              "reservationId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "reservationId"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "ALLOCATE"
+              },
+              "reservationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "promoteCommandId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "reservationId",
+              "promoteCommandId"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "RELEASE"
+              },
+              "reservationId": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "reservationId"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "DataCommand": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "PRECHECK"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "VERIFY"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "freezeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "checkpoint": {
+                "type": "string"
+              },
+              "timeline": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target",
+              "freezeId",
+              "checkpoint",
+              "timeline"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "TrafficCommand": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "FREEZE"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "reservationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expectedEpoch": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target",
+              "reservationId",
+              "expectedEpoch"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "PROMOTE"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "reservationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "proofId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "freezeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expectedEpoch": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target",
+              "reservationId",
+              "proofId",
+              "freezeId",
+              "expectedEpoch"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "ROUTE"
+              },
+              "target": {
+                "type": "string"
+              },
+              "expectedEpoch": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "target",
+              "expectedEpoch"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "RESUME"
+              },
+              "source": {
+                "type": "string"
+              },
+              "freezeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expectedEpoch": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "expectedEpoch"
+            ],
+            "additionalProperties": false,
+            "description": "Atomic abort before promotion. freezeId is required if source is already FROZEN; omit only when closing a not-yet-frozen generation. Saves terminal ABORTED tombstone."
+          }
+        ]
+      },
+      "ReadinessCommand": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "CHECK"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "reservationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "proofId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expectedEpoch": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target",
+              "reservationId",
+              "proofId",
+              "expectedEpoch"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ControllerCommand": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "FREEZE"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "expectedEpoch": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target",
+              "expectedEpoch"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "PROMOTE"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "freezeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "checkpoint": {
+                "type": "string"
+              },
+              "timeline": {
+                "type": "string"
+              },
+              "expectedEpoch": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target",
+              "freezeId",
+              "checkpoint",
+              "timeline",
+              "expectedEpoch"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "ROUTE"
+              },
+              "target": {
+                "type": "string"
+              },
+              "expectedEpoch": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "target",
+              "expectedEpoch"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "RESUME"
+              },
+              "source": {
+                "type": "string"
+              },
+              "freezeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expectedEpoch": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "expectedEpoch"
+            ],
+            "additionalProperties": false,
+            "description": "Atomic abort before promotion. freezeId is required if source is already FROZEN; omit only when closing a not-yet-frozen generation. Saves terminal ABORTED tombstone."
+          }
+        ]
+      },
+      "ReplicationCommand": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "PRECHECK"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "commandId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "migrationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "workloadId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "generation": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "action": {
+                "type": "string",
+                "const": "VERIFY"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "freezeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "checkpoint": {
+                "type": "string"
+              },
+              "timeline": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "commandId",
+              "migrationId",
+              "workloadId",
+              "generation",
+              "action",
+              "source",
+              "target",
+              "freezeId",
+              "checkpoint",
+              "timeline"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "TaskCompletion": {
+        "type": "object",
+        "properties": {
+          "commandId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "commandId",
+          "generation",
+          "evidence"
+        ],
+        "additionalProperties": false
+      },
+      "Snapshot": {
+        "type": "object",
+        "properties": {
+          "migrationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workloadId": {
+            "type": "string"
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "state": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "reservationId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "proofId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "freezeId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "checkpoint": {
+                "type": "string"
+              },
+              "timeline": {
+                "type": "string"
+              },
+              "writer": {
+                "type": "string"
+              },
+              "writerEpoch": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "route": {
+                "type": "string"
+              },
+              "healthy": {
+                "type": "boolean"
+              },
+              "sourceFenced": {
+                "type": "boolean"
+              },
+              "permitId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "units": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "tasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "taskId": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "completed": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "taskId",
+                    "description",
+                    "completed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "migrationId",
+          "workloadId",
+          "generation",
+          "state",
+          "version",
+          "details"
+        ],
+        "additionalProperties": false
+      },
+      "ControllerState": {
+        "type": "object",
+        "properties": {
+          "workloadId": {
+            "type": "string"
+          },
+          "generation": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "writer": {
+            "type": "string",
+            "enum": [
+              "A",
+              "B",
+              "NONE"
+            ]
+          },
+          "writerEpoch": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "sourceFenced": {
+            "type": "boolean"
+          },
+          "freezeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "checkpoint": {
+            "type": "string"
+          },
+          "timeline": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "healthy": {
+            "type": "boolean"
+          },
+          "attemptState": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "FROZEN",
+              "PROMOTED",
+              "ABORTED"
+            ]
+          }
+        },
+        "required": [
+          "workloadId",
+          "generation",
+          "writer",
+          "writerEpoch",
+          "sourceFenced",
+          "route",
+          "healthy",
+          "attemptState"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+flowchart LR
+ feed["Внешний сигнал тревоги"] -->|"REST: создать инцидент"| inc["Incident: saga и тревоги"]
+ inc -->|"Резервировать и закрепить"| cap["Capacity: ресурсы"]
+ inc -->|"Проверить checkpoint"| dat["Data: доказательства репликации"]
+ inc -->|"Freeze, promote, route"| tr["Traffic: переключение"]
+ inc -->|"Проверить готовность"| rd["Readiness: задания и разрешение"]
+ cap -->|"Состояние резерва"| rd
+ dat -->|"Proof"| rd
+ tr -->|"Writer, fence, маршрут"| rd
+ ctl["Внешний контроллер"] --- tr
+ rep["Контроллер репликации"] --- dat
+ eng["Инженер"] -->|"Выполнить задания"| rd
+ bus["События фактов: RabbitMQ"]
+ inc -.-> bus
+ cap -.-> bus
+ dat -.-> bus
+ tr -.-> bus
+ rd -.-> bus
+ bus -.-> inc
+ bus -.-> rd

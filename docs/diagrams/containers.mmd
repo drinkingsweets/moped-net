@@ -1,0 +1,49 @@
+flowchart TB
+ operator["Дежурный / инженер: Person"]
+ feed["Threat Feed: внешняя система"]
+ idp["Identity Provider: внешний OIDC"]
+ infra["Infrastructure Controller: внешний REST; writer, fence, route"]
+ repl["Replication Controller: внешний REST; checkpoint"]
+ subgraph system["Мопед.NET — граница системы"]
+ ui["Operator UI: Web"]
+ inc["Incident: Java / REST"]
+ cap["Capacity: Java / REST"]
+ dat["Data: Java / REST"]
+ tr["Traffic: Java / REST"]
+ rd["Readiness: Java / REST"]
+ dbi[("Incident DB: PostgreSQL")]
+ dbc[("Capacity DB: PostgreSQL")]
+ dbd[("Data DB: PostgreSQL")]
+ dbt[("Traffic DB: PostgreSQL")]
+ dbr[("Readiness DB: PostgreSQL")]
+ mq["Event Broker: RabbitMQ / AMQP"]
+ ui -->|"HTTPS: миграции"| inc
+ ui -->|"HTTPS: задания"| rd
+ inc -->|"REST команды"| cap
+ inc -->|"REST команды"| dat
+ inc -->|"REST команды"| tr
+ inc -->|"REST CHECK"| rd
+ tr -->|"REST резерв"| cap
+ tr -->|"REST proof"| dat
+ cap -->|"REST состояние для RELEASE"| tr
+ rd -->|"REST резерв"| cap
+ rd -->|"REST proof"| dat
+ rd -->|"REST writer и маршрут"| tr
+ inc ---|"SQL"| dbi
+ cap ---|"SQL"| dbc
+ dat ---|"SQL"| dbd
+ tr ---|"SQL"| dbt
+ rd ---|"SQL"| dbr
+ inc -->|"AMQP publish"| mq
+ cap -->|"AMQP publish"| mq
+ dat -->|"AMQP publish"| mq
+ tr -->|"AMQP publish"| mq
+ rd -->|"AMQP publish"| mq
+ mq -->|"AMQP consume"| inc
+ mq -->|"AMQP consume"| rd
+ end
+ operator -->|"HTTPS"| ui
+ feed -->|"HTTPS alert"| inc
+ ui -->|"OIDC login"| idp
+ tr -->|"HTTPS операции / readback"| infra
+ dat -->|"HTTPS verify"| repl

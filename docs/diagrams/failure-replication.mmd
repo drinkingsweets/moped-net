@@ -1,0 +1,24 @@
+sequenceDiagram
+ participant I as Incident
+ participant D as Data
+ participant T as Traffic
+ participant X as Контроллер
+ participant C as Capacity
+ I->>T: FREEZE
+ T->>X: fence A и checkpoint
+ X-->>T: A fenced, checkpoint=100
+ I->>D: VERIFY checkpoint=100
+ D-->>I: B applied=90, ещё не готов
+ I->>I: deadline, BLOCKED
+ I->>T: RESUME для abort generation
+ T->>X: CAS abort if not promoted
+ alt Контроллер подтвердил abort
+ X-->>T: A writer, новое epoch, generation closed
+ T-->>I: SUCCEEDED
+ I->>C: RELEASE
+ C-->>I: RELEASED
+ I->>I: ABORTED
+ else Контроллер недоступен
+ T-->>I: UNKNOWN
+ I->>I: BLOCKED, резерв PINNED, дежурному сигнал
+ end

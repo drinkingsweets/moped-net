@@ -1,0 +1,38 @@
+sequenceDiagram
+ actor O as Дежурный
+ participant I as Incident
+ participant C as Capacity
+ participant D as Data
+ participant T as Traffic
+ participant X as Контроллер
+ participant R as Readiness
+ O->>I: POST alert, Idempotency-Key
+ I-->>O: 202 migrationId
+ I->>C: RESERVE
+ C-->>I: HELD
+ I->>D: PRECHECK
+ D-->>I: совместимость подтверждена
+ I->>C: PIN
+ C-->>I: PINNED
+ I->>T: FREEZE commandId=f1
+ T->>X: fence A, drain, final checkpoint
+ X-->>T: freezeId, checkpoint, epoch=41
+ T-->>I: SUCCEEDED через GET operation
+ I->>D: VERIFY freezeId + checkpoint
+ D-->>I: proofId, checkpoint applied on B
+ I->>T: PROMOTE proofId
+ T->>C: проверить PINNED
+ T->>D: проверить proof
+ T->>X: promote B, expectedEpoch=41
+ X-->>T: B writer, epoch=42
+ I->>T: ROUTE
+ T->>X: route B, readback
+ X-->>T: route B, healthy
+ I->>C: ALLOCATE
+ O->>R: завершить задания
+ I->>R: CHECK
+ R->>T: актуальные writer, fence, route
+ R->>D: proof текущего поколения
+ R->>C: ALLOCATED
+ R-->>I: READY_TO_SHUTDOWN
+ I-->>O: подготовка завершена

@@ -1,0 +1,19 @@
+stateDiagram-v2
+ [*] --> PREPARING
+ PREPARING --> PINNED: ресурс и precheck
+ PREPARING --> ABORTED: подтверждённый отказ
+ PINNED --> FROZEN: fencing и checkpoint
+ FROZEN --> VERIFIED: proof B
+ VERIFIED --> PROMOTED: новое writerEpoch
+ PROMOTED --> ROUTED: readback маршрута
+ ROUTED --> READY_TO_SHUTDOWN: проверки и задания
+ PINNED --> BLOCKED: неизвестный freeze
+ FROZEN --> BLOCKED: timeout replication
+ VERIFIED --> BLOCKED: неизвестный promote
+ BLOCKED --> ABORTED: CAS abort подтвердил A
+ BLOCKED --> PROMOTED: readback подтвердил B
+ BLOCKED --> FROZEN: readback подтвердил freeze
+ PROMOTED --> DEGRADED: route не готов
+ DEGRADED --> ROUTED: route восстановлен
+ READY_TO_SHUTDOWN --> [*]
+ ABORTED --> [*]

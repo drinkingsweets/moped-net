@@ -1,0 +1,24 @@
+sequenceDiagram
+ participant I as Incident
+ participant T as Traffic
+ participant X as Контроллер
+ participant C as Capacity
+ participant R as Readiness
+ I->>T: PROMOTE commandId=p1
+ T->>X: PROMOTE B, p1
+ X->>X: сохранить writer=B, epoch=42
+ X--xT: ответ потерян
+ T->>T: падение процесса
+ I->>I: timeout, состояние UNKNOWN
+ I->>I: не запускать RESUME
+ T->>X: после рестарта GET operations/p1
+ X-->>T: SUCCEEDED, B, epoch=42
+ T->>T: сохранить результат + outbox
+ I->>T: GET operations/p1
+ T-->>I: SUCCEEDED
+ I->>T: ROUTE B
+ T->>X: повторяемая настройка и readback
+ X-->>T: route=B, healthy
+ I->>C: ALLOCATE
+ I->>R: CHECK после заданий
+ R-->>I: READY_TO_SHUTDOWN
