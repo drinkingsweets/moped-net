@@ -7,13 +7,7 @@
 
 ## Начать здесь
 - [Для показа на защите](docs/defense/README.md)
-- [Для подготовки команды](https://github.com/drinkingsweets/moped-net-preparation/blob/main/docs/README.md)
 - [Навигация по пяти артефактам](docs/README.md)
-- [Общий контекст команды](https://github.com/drinkingsweets/moped-net-preparation/blob/main/docs/team-guide.md)
-- [Сценарий выступления на 5 минут](https://github.com/drinkingsweets/moped-net-preparation/blob/main/docs/script.md)
-- [Вопросы на защите](https://github.com/drinkingsweets/moped-net-preparation/blob/main/docs/questions.md)
-- [Шпаргалка на одну страницу](https://github.com/drinkingsweets/moped-net-preparation/blob/main/docs/one-page.md)
-- [План реализации](https://github.com/drinkingsweets/moped-net-preparation/blob/main/docs/implementation-plan.md)
 
 Откройте `docs/architecture.html` в браузере: автономный справочник с отрисованными диаграммами. Материалы для показа находятся в `docs/defense/`, для подготовки команды — в отдельном репозитории `moped-net-preparation`. Исходники Mermaid находятся в `docs/diagrams/`. Спецификации OpenAPI и AsyncAPI записаны в JSON, одном из поддерживаемых ими форматов.
 
